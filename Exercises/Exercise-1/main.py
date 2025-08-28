@@ -52,9 +52,9 @@ async def main():
         tasks = [download_file(session, url, sem) for url in download_uris]
         results = await asyncio.gather(*tasks)
 
-        for content, filename in results:
-            if content:
-                unzip_from_memory(content, filename)
+        file_tasks = [asyncio.to_thread(
+            unzip_from_memory, content, filename) for content, filename in results if content]
+        await asyncio.gather(*file_tasks)
 
     elapsed = time.time() - start_time
     print(f"⏱ Done in {elapsed:.2f} seconds")
